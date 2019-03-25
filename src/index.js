@@ -3,6 +3,10 @@
 // load modules
 const express = require('express');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
+const User = require('./models/user.js');
+const Course = require('./models/course.js');
+const Review = require('./models/review.js');
 
 const app = express();
 
@@ -11,6 +15,20 @@ app.set('port', process.env.PORT || 5000);
 
 // morgan gives us http request logging
 app.use(morgan('dev'));
+
+// mongodb connection
+mongoose.connect("mongodb://localhost:27017/course-api");
+const db = mongoose.connection;
+
+// database connection error
+db.on('error', (error) => {
+  console.error("connection error:", error);
+});
+
+// message about successful connection to the database
+db.once("open", () => {
+  console.log("database connection is successful!");
+});
 
 // TODO add additional routes here
 
