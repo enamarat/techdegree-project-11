@@ -4,11 +4,18 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+//const router = express.Router();
+
+// load models
 const User = require('./models/user.js');
 const Course = require('./models/course.js');
 const Review = require('./models/review.js');
 
 const app = express();
+
+// make req.body and res.body readable by our app
+app.use(bodyParser.json())
 
 // set our port
 app.set('port', process.env.PORT || 5000);
@@ -26,23 +33,52 @@ db.on('error', (error) => {
 });
 
 // message about successful connection to the database
-db.once("open", () => {
+db.once('open', () => {
   console.log("database connection is successful!");
 });
 
-// TODO add additional routes here
 
 // send a friendly greeting for the root route
-app.get('/', (req, res) => {
+app.get('/', (req, res, next) => {
   res.json({
     message: 'Welcome to the Course Review API'
   });
 });
 
+// TODO add additional routes here
+// this route returns the currently authenticated user
+app.get('/api/users', (req, res, next) => {
+  res.json({
+    message: 'users!'
+  });
+});
+
+// this route creates a user, sets the Location header to "/", and returns no content
+app.post('/api/users', (req, res, next) => {
+  // Check whether a user filled in all fields
+
+  // create a "user" object
+  const userData = {
+    fullName: req.body.fullName,
+    emailAddress: req.body.emailAddress,
+    password: req.body.password
+  }
+
+  User.create(userData, (error, user) => {
+    return res.redirect('/');
+  });
+
+});
+
+
+
+
+/***********************************/
+
 // uncomment this route in order to test the global error handler
-// app.get('/error', function (req, res) {
-//   throw new Error('Test error');
-// });
+app.get('/error', function (req, res) {
+  throw new Error('Test error');
+});
 
 // send 404 if no other route matched
 app.use((req, res) => {
