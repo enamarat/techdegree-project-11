@@ -53,7 +53,7 @@ app.get('/api/users', (req, res, next) => {
   });
 });
 
-// this route creates a user, sets the Location header to "/", and returns no content
+// this route creates a user, sets the location header to "/", and returns no content
 app.post('/api/users', (req, res, next) => {
   // Check whether a user filled in all fields
 
@@ -70,8 +70,17 @@ app.post('/api/users', (req, res, next) => {
 
 });
 
+// this route returns the list of courses and contains only "_id" and "title" properties of each course
+app.get('/api/courses', (req, res, next) => {
+  Course.find({}, '_id title', (err, courses) => {
+    res.json(courses);
+  });
+});
 
+// this route returns all course properties and related documents for the provided course ID
+app.get('/api/course/:courseId', (req, res, next) => {
 
+});
 
 /***********************************/
 
