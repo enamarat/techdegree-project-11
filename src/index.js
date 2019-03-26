@@ -37,7 +37,7 @@ db.once('open', () => {
   console.log("database connection is successful!");
 });
 
-
+/*************Routes*******************************/
 // send a friendly greeting for the root route
 app.get('/', (req, res, next) => {
   res.json({
@@ -45,11 +45,10 @@ app.get('/', (req, res, next) => {
   });
 });
 
-// TODO add additional routes here
 // this route returns the currently authenticated user
 app.get('/api/users', (req, res, next) => {
   res.json({
-    message: 'users!'
+    message: 'authenticated user!'
   });
 });
 
@@ -78,8 +77,11 @@ app.get('/api/courses', (req, res, next) => {
 });
 
 // this route returns all course properties and related documents for the provided course ID
-app.get('/api/course/:courseId', (req, res, next) => {
-
+app.get('/api/courses/:courseId', (req, res, next) => {
+  console.log(req.params.courseId);
+  Course.findById(req.params.courseId, (err, document) => {
+    res.json(document);
+  });
 });
 
 /***********************************/
