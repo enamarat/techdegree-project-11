@@ -67,21 +67,6 @@ app.post('/api/users', (req, res, next) => {
         }
 
         // if email of a newly created users mathces email of a existing user, throw an error
-        // User.find({}, 'emailAddress', (err, emails) => {
-        //   emails.map(email => {
-        //     console.log(email);
-        //     if (req.body.emailAddress === email.emailAddress) {
-        //       const err = new Error('The typed email already exists!');
-        //       err.status = 400;
-        //       return next(err);
-        //     } else {
-        //       User.create(userData, (err, user) => {
-        //         res.redirect('/');
-        //       });
-        //     }
-        //   });
-        // });
-
         User.create(userData, (err, user) => {
           if(err) {
             err.message = 'The entered email already exists!';
@@ -113,14 +98,29 @@ app.get('/api/courses/:courseId', (req, res, next) => {
   });
 });
 
-// this route creates a course, sets the location header, and returns no content
+// this route creates a course, sets the location header, and returns no content, except an updated list of courses
 app.post('/api/courses', (req, res, next) => {
   const course = new Course(req.body);
   course.save((err, course) => {
     if (err) {
+      err.status = 400;
       return next(err);
     }
-    res.json(course);
+    res.redirect('/api/courses');
+  });
+});
+
+// this route updates a course and returns no content, except an updated list of courses
+app.put('/api/courses/:courseId', (req, res, next) => {
+  Course.findOneAndUpdate({'_id': req.params.courseId}, { '$set': {
+    user: req.body.user,
+    title: req.body.title,
+    description: req.body.description,
+    estimatedTime: req.body.estimatedTime,
+    steps: req.body.steps,
+    reviews: req.body.reviews
+  }}, (err, document) => {
+    res.redirect('/api/courses');
   });
 });
 
