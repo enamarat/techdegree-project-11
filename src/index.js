@@ -5,7 +5,6 @@ const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-//const router = express.Router();
 
 // load models
 const User = require('./models/user.js');
@@ -74,7 +73,7 @@ app.post('/api/users', (req, res, next) => {
             return next(err);
           } else {
             res.redirect('/');
-          }
+            }
         });
   } else {
     const err = new Error('All fields required!');
@@ -120,8 +119,28 @@ app.put('/api/courses/:courseId', (req, res, next) => {
     steps: req.body.steps,
     reviews: req.body.reviews
   }}, (err, document) => {
+    if (err) {
+      err.status = 400;
+      return next(err);
+    }
     res.redirect('/api/courses');
   });
+});
+
+// this route creates a review for the specified course ID, sets the location header to the related course, and returns no content
+app.post('/api/courses/:courseId/reviews', (req, res, next) => {
+  const review = new Review(req.body);
+  review.save();
+
+  // Course.findOne({'_id': req.params.courseId}, 'reviews', (err, document) => {
+  //   if (err) {
+  //     err.status = 400;
+  //     return next(err);
+  //   }
+  //   document.reviews.push(review);
+  //   console.log(document);
+     res.redirect('/api/courses/:courseId');
+  // });
 });
 
 
