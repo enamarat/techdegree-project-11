@@ -46,26 +46,56 @@ app.get('/', (req, res, next) => {
 });
 
 // this route returns the currently authenticated user
+// if no user is authenticated, list of all users will be returned
 app.get('/api/users', (req, res, next) => {
-  res.json({
-    message: 'authenticated user!'
+  User.find({}, '_id fullName', (err, courses) => {
+    res.json(courses);
   });
 });
 
-// this route creates a user, sets the location header to "/", and returns no content
+// this route creates a user, sets the location header to "/" and returns no content
 app.post('/api/users', (req, res, next) => {
-  // Check whether a user filled in all fields
+  // check whether a user's information is filled in all fields
+  if (req.body.fullName &&
+      req.body.emailAddress &&
+      req.body.password) {
+        // create a "user" object with properties provided by the request
+        const userData = {
+          fullName: req.body.fullName,
+          emailAddress: req.body.emailAddress,
+          password: req.body.password
+        }
 
-  // create a "user" object
-  const userData = {
-    fullName: req.body.fullName,
-    emailAddress: req.body.emailAddress,
-    password: req.body.password
+        // if email of a newly created users mathces email of a existing user, throw an error
+        // User.find({}, 'emailAddress', (err, emails) => {
+        //   emails.map(email => {
+        //     console.log(email);
+        //     if (req.body.emailAddress === email.emailAddress) {
+        //       const err = new Error('The typed email already exists!');
+        //       err.status = 400;
+        //       return next(err);
+        //     } else {
+        //       User.create(userData, (err, user) => {
+        //         res.redirect('/');
+        //       });
+        //     }
+        //   });
+        // });
+
+        User.create(userData, (err, user) => {
+          if(err) {
+            err.message = 'The entered email already exists!';
+            err.status = 400;
+            return next(err);
+          } else {
+            res.redirect('/');
+          }
+        });
+  } else {
+    const err = new Error('All fields required!');
+    err.status = 400;
+    return next(err);
   }
-
-  User.create(userData, (error, user) => {
-    return res.redirect('/');
-  });
 
 });
 
@@ -78,11 +108,22 @@ app.get('/api/courses', (req, res, next) => {
 
 // this route returns all course properties and related documents for the provided course ID
 app.get('/api/courses/:courseId', (req, res, next) => {
-  console.log(req.params.courseId);
   Course.findById(req.params.courseId, (err, document) => {
     res.json(document);
   });
 });
+
+// this route creates a course, sets the location header, and returns no content
+app.post('/api/courses', (req, res, next) => {
+  const course = new Course(req.body);
+  course.save((err, course) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(course);
+  });
+});
+
 
 /***********************************/
 
@@ -103,7 +144,7 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
     message: err.message,
-    error: {}
+    error: err
   });
 });
 
