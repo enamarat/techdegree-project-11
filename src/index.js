@@ -5,6 +5,8 @@ const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const auth = require('basic-auth');
 
 // load models
 const User = require('./models/user.js');
@@ -37,6 +39,26 @@ db.once('open', () => {
   console.log("database connection is successful!");
 });
 
+/*************** Middleware functions **************/
+function authenticateUser(req, res, next) {
+    const credentials = auth(req);
+    if (credentials) {
+        User.authenticate(credentials.name, credentials.pass, function(err, user) {
+            if(err) {
+              return next(err);
+            } else {
+              console.log(credentials);
+              req.currentUser = user;
+              next();
+            }
+        });
+    } else {
+        const err = new Error('Email or password are not provided!');
+        err.status = 401;
+        return next(err);
+    }
+}
+
 /*************Routes*******************************/
 // send a friendly greeting for the root route
 app.get('/', (req, res, next) => {
@@ -46,11 +68,8 @@ app.get('/', (req, res, next) => {
 });
 
 // this route returns the currently authenticated user
-// if no user is authenticated, list of all users will be returned
-app.get('/api/users', (req, res, next) => {
-  User.find({}, '_id fullName', (err, courses) => {
-    res.json(courses);
-  });
+app.get('/api/users', authenticateUser, (req, res, next) => {
+   res.json(req.currentUser);
 });
 
 // this route creates a user, sets the location header to "/" and returns no content
@@ -159,13 +178,8 @@ app.post('/api/courses/:courseId/reviews', (req, res, next) => {
 
 });
 
-
 /***********************************/
 
-// uncomment this route in order to test the global error handler
-app.get('/error', function (req, res) {
-  throw new Error('Test error');
-});
 
 // send 404 if no other route matched
 app.use((req, res) => {
