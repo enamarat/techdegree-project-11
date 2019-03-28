@@ -73,7 +73,9 @@ app.post('/api/users', (req, res, next) => {
             err.status = 400;
             return next(err);
           } else {
-            res.redirect('/');
+            res.location('/');
+            res.end();
+            //res.redirect('/');
             }
         });
   } else {
@@ -98,7 +100,7 @@ app.get('/api/courses/:courseId', (req, res, next) => {
   });
 });
 
-// this route creates a course, sets the location header, and returns no content, except an updated list of courses
+// this route creates a course, sets the location header and returns no content
 app.post('/api/courses', (req, res, next) => {
   const course = new Course(req.body);
   course.save((err, course) => {
@@ -106,11 +108,13 @@ app.post('/api/courses', (req, res, next) => {
       err.status = 400;
       return next(err);
     }
-   res.redirect('/api/courses');
+    res.location('/api/courses');
+    res.end();
+   //res.redirect('/api/courses');
   });
 });
 
-// this route updates a course and returns no content, except an updated list of courses
+// this route updates a course and returns no content
 app.put('/api/courses/:courseId', (req, res, next) => {
   Course.findOneAndUpdate({'_id': req.params.courseId}, { '$set': {
     user: req.body.user,
@@ -124,11 +128,13 @@ app.put('/api/courses/:courseId', (req, res, next) => {
       err.status = 400;
       return next(err);
     }
-    res.redirect('/api/courses');
+    res.location('/api/courses');
+    res.end();
+    //res.redirect('/api/courses');
   });
 });
 
-// this route creates a review for the specified course ID, sets the location header to the related course, and returns no content
+// this route creates a review for the specified course ID, sets the location header to the related course and returns no content
 app.post('/api/courses/:courseId/reviews', (req, res, next) => {
   Course.findOne({'_id': req.params.courseId}, 'reviews', (err, document) => {
     if (err) {
@@ -146,8 +152,9 @@ app.post('/api/courses/:courseId/reviews', (req, res, next) => {
 
     document.reviews.push(review);
     document.save();
-    console.log(document);
-    res.redirect(`/api/courses/${req.params.courseId}`);
+    res.location(`/api/courses/${req.params.courseId}`);
+    res.end();
+    //res.redirect(`/api/courses/${req.params.courseId}`);
   });
 
 });
