@@ -8,8 +8,9 @@ const bodyParser = require('body-parser');
 
 // load models
 const User = require('./models/user.js');
-const Course = require('./models/course.js');
 const Review = require('./models/review.js');
+const Course = require('./models/course.js');
+
 
 const app = express();
 
@@ -105,7 +106,7 @@ app.post('/api/courses', (req, res, next) => {
       err.status = 400;
       return next(err);
     }
-    res.redirect('/api/courses');
+   res.redirect('/api/courses');
   });
 });
 
@@ -118,7 +119,7 @@ app.put('/api/courses/:courseId', (req, res, next) => {
     estimatedTime: req.body.estimatedTime,
     steps: req.body.steps,
     reviews: req.body.reviews
-  }}, (err, document) => {
+  }}, (err) => {
     if (err) {
       err.status = 400;
       return next(err);
@@ -129,18 +130,26 @@ app.put('/api/courses/:courseId', (req, res, next) => {
 
 // this route creates a review for the specified course ID, sets the location header to the related course, and returns no content
 app.post('/api/courses/:courseId/reviews', (req, res, next) => {
-  const review = new Review(req.body);
-  review.save();
+  Course.findOne({'_id': req.params.courseId}, 'reviews', (err, document) => {
+    if (err) {
+      err.status = 400;
+      return next(err);
+    }
 
-  // Course.findOne({'_id': req.params.courseId}, 'reviews', (err, document) => {
-  //   if (err) {
-  //     err.status = 400;
-  //     return next(err);
-  //   }
-  //   document.reviews.push(review);
-  //   console.log(document);
-     res.redirect('/api/courses/:courseId');
-  // });
+    const review = new Review(req.body);
+    review.save((err) => {
+      if (err) {
+        err.status = 400;
+        return next(err);
+      }
+    });
+
+    document.reviews.push(review);
+    document.save();
+    console.log(document);
+    res.redirect(`/api/courses/${req.params.courseId}`);
+  });
+
 });
 
 
