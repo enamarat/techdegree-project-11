@@ -47,7 +47,7 @@ function authenticateUser(req, res, next) {
             if(err) {
               return next(err);
             } else {
-              console.log(credentials);
+              //console.log(credentials);
               req.currentUser = user;
               next();
             }
@@ -120,8 +120,9 @@ app.get('/api/courses/:courseId', (req, res, next) => {
 });
 
 // this route creates a course, sets the location header and returns no content
-app.post('/api/courses', (req, res, next) => {
+app.post('/api/courses', authenticateUser, (req, res, next) => {
   const course = new Course(req.body);
+  course.user = req.currentUser._id;
   course.save((err, course) => {
     if (err) {
       err.status = 400;
@@ -134,9 +135,9 @@ app.post('/api/courses', (req, res, next) => {
 });
 
 // this route updates a course and returns no content
-app.put('/api/courses/:courseId', (req, res, next) => {
+app.put('/api/courses/:courseId', authenticateUser, (req, res, next) => {
   Course.findOneAndUpdate({'_id': req.params.courseId}, { '$set': {
-    user: req.body.user,
+    user: req.currentUser._id,
     title: req.body.title,
     description: req.body.description,
     estimatedTime: req.body.estimatedTime,
@@ -154,7 +155,7 @@ app.put('/api/courses/:courseId', (req, res, next) => {
 });
 
 // this route creates a review for the specified course ID, sets the location header to the related course and returns no content
-app.post('/api/courses/:courseId/reviews', (req, res, next) => {
+app.post('/api/courses/:courseId/reviews', authenticateUser, (req, res, next) => {
   Course.findOne({'_id': req.params.courseId}, 'reviews', (err, document) => {
     if (err) {
       err.status = 400;
@@ -162,6 +163,7 @@ app.post('/api/courses/:courseId/reviews', (req, res, next) => {
     }
 
     const review = new Review(req.body);
+    review.user = req.currentUser._id;
     review.save((err) => {
       if (err) {
         err.status = 400;
@@ -169,6 +171,9 @@ app.post('/api/courses/:courseId/reviews', (req, res, next) => {
       }
     });
 
+    if (document.reviews === null) {
+      document.reviews = [];
+    }
     document.reviews.push(review);
     document.save();
     res.location(`/api/courses/${req.params.courseId}`);
