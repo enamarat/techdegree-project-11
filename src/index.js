@@ -114,9 +114,21 @@ app.get('/api/courses', (req, res, next) => {
 });
 
 // this route returns all course properties and related documents for the provided course ID
+// app.get('/api/courses/:courseId', (req, res, next) => {
+//   Course.findById(req.params.courseId, (err, document) => {
+//     res.json(document);
+//   });
+// });
+
 app.get('/api/courses/:courseId', (req, res, next) => {
-  Course.findById(req.params.courseId, (err, document) => {
-    res.json(document);
+  Course.findById(req.params.courseId)
+  .populate('reviews')
+  .exec(function(err, data){
+    if (err) {
+      return next(err);
+    } else {
+        res.json(data);
+    }
   });
 });
 
