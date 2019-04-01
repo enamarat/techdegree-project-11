@@ -93,6 +93,7 @@ app.post('/api/users', (req, res, next) => {
             return next(err);
           } else {
             res.location('/');
+            res.status(201);
             res.end();
             //res.redirect('/');
             }
@@ -129,6 +130,7 @@ app.post('/api/courses', authenticateUser, (req, res, next) => {
       return next(err);
     }
     res.location('/api/courses');
+    res.status(201);
     res.end();
    //res.redirect('/api/courses');
   });

@@ -16,6 +16,9 @@ const courseSchema = new mongoose.Schema({
   estimatedTime: {
     type: String
   },
+  materialsNeeded: {
+    type: String
+  },
   steps: [{
       stepNumber: {
         type: Number
