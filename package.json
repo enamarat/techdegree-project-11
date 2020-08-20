@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "basic-auth": "^2.0.1",
-    "bcrypt": "^3.0.5",
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.18.3",
     "express": "^4.17.1",
     "express-session": "^1.15.6",
